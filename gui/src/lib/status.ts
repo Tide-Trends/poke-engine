@@ -13,6 +13,7 @@ export function createStatusPoller(baseUrl: () => string, onUpdate: (snapshot: S
         online: false,
         message: error instanceof Error ? error.message : 'Unable to reach engine',
         checkedAt: new Date().toISOString(),
+        endpoints: [],
       });
     }
   };

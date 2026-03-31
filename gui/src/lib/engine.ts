@@ -9,26 +9,28 @@ export type StatusSnapshot = {
   online: boolean;
   message: string;
   checkedAt: string;
+  endpoints: Array<{ path: string; ok: boolean; detail: string }>;
+};
+
+export type ChatResponse = {
+  message: string;
+  status: number;
 };
 
 export async function checkEngine(baseUrl: string): Promise<StatusSnapshot> {
-  const response = await fetch(`${normalizeBaseUrl(baseUrl)}/v1/models`, {
-    method: 'GET',
-    headers: { Accept: 'application/json' },
-  });
+  const root = normalizeBaseUrl(baseUrl);
+  const health = await probe(`${root}/healthz`);
+  const models = await probe(`${root}/v1/models`);
 
-  if (!response.ok) {
-    return {
-      online: false,
-      message: `Engine responded with ${response.status}`,
-      checkedAt: new Date().toISOString(),
-    };
-  }
-
+  const online = health.ok && models.ok;
   return {
-    online: true,
-    message: 'Engine is online',
+    online,
+    message: online ? 'Engine ready for premium UI testing' : 'Engine needs attention',
     checkedAt: new Date().toISOString(),
+    endpoints: [
+      { path: '/healthz', ok: health.ok, detail: health.detail },
+      { path: '/v1/models', ok: models.ok, detail: models.detail },
+    ],
   };
 }
 
@@ -39,7 +41,7 @@ export async function streamChatCompletion(params: {
   onToken: (token: string) => void;
   onStatus?: (status: StreamStatus) => void;
 }): Promise<void> {
-  const { baseUrl, messages, model = 'gpt-4.1-mini', onToken, onStatus } = params;
+  const { baseUrl, messages, model = 'poke-engine', onToken, onStatus } = params;
   onStatus?.('connecting');
 
   const response = await fetch(`${normalizeBaseUrl(baseUrl)}/v1/chat/completions`, {
@@ -48,15 +50,12 @@ export async function streamChatCompletion(params: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream, application/json',
     },
-    body: JSON.stringify({
-      model,
-      stream: true,
-      messages,
-    }),
+    body: JSON.stringify({ model, stream: true, messages }),
   });
 
   if (!response.ok || !response.body) {
-    throw new Error(`Chat completion failed with ${response.status}`);
+    const message = await safeText(response);
+    throw new Error(message || `Chat completion failed with ${response.status}`);
   }
 
   onStatus?.('streaming');
@@ -67,7 +66,6 @@ export async function streamChatCompletion(params: {
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-
     buffer += decoder.decode(value, { stream: true });
 
     const parts = buffer.split(/\n\n|\r\n\r\n/);
@@ -99,6 +97,26 @@ export async function streamChatCompletion(params: {
   const tail = decoder.decode();
   if (tail.trim()) onToken(tail);
   onStatus?.('complete');
+}
+
+async function probe(url: string): Promise<{ ok: boolean; detail: string }> {
+  try {
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+      return { ok: false, detail: `HTTP ${response.status}` };
+    }
+    return { ok: true, detail: await safeText(response) };
+  } catch (error) {
+    return { ok: false, detail: error instanceof Error ? error.message : 'network error' };
+  }
+}
+
+async function safeText(response: Response): Promise<string> {
+  try {
+    return (await response.text()).slice(0, 240);
+  } catch {
+    return '';
+  }
 }
 
 function normalizeBaseUrl(baseUrl: string): string {

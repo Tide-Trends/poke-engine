@@ -1,19 +1,19 @@
 # Poke Engine GUI
 
-A Tauri-based desktop scaffold for `poke-engine`.
+A premium Tauri-based desktop shell for `poke-engine`.
 
-## What this scaffold includes
-- Local connection to `http://127.0.0.1:3000`
-- Streaming chat UI for `/v1/chat/completions`
-- Connection/status polling against `/v1/models`
-- A clean desktop shell ready for native polish
+## What it includes
+- Multi-pane developer layout with repository explorer, code viewer, and streaming assistant
+- Live endpoint health for `/healthz` and `/v1/models`
+- Streaming client for `/v1/chat/completions`
+- Dark-mode visual system tuned for a high-end developer experience
 
 ## Development
 1. Run the backend on port 3000.
-2. In `gui/`, install dependencies.
-3. Start the Vite frontend and Tauri shell.
+2. In `gui/`, install dependencies with Bun or npm.
+3. Start the frontend and Tauri shell.
 
 ## Notes
-- The frontend talks directly to the local engine API.
-- Base URL is configurable in the UI and stored in `localStorage`.
-- Streaming supports both SSE-style `data:` payloads and raw chunked text.
+- The explorer uses a polished local workspace scaffold so the UI feels complete immediately.
+- The base URL is configurable in the UI and stored in `localStorage`.
+- The assistant panel understands both SSE-style `data:` chunks and raw JSON tokens.
