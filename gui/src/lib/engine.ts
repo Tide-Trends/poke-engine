@@ -12,11 +12,6 @@ export type StatusSnapshot = {
   endpoints: Array<{ path: string; ok: boolean; detail: string }>;
 };
 
-export type ChatResponse = {
-  message: string;
-  status: number;
-};
-
 export async function checkEngine(baseUrl: string): Promise<StatusSnapshot> {
   const root = normalizeBaseUrl(baseUrl);
   const health = await probe(`${root}/healthz`);
@@ -25,7 +20,7 @@ export async function checkEngine(baseUrl: string): Promise<StatusSnapshot> {
   const online = health.ok && models.ok;
   return {
     online,
-    message: online ? 'Engine ready for premium UI testing' : 'Engine needs attention',
+    message: online ? 'Engine ready for Codex-grade UI testing' : 'Engine needs attention',
     checkedAt: new Date().toISOString(),
     endpoints: [
       { path: '/healthz', ok: health.ok, detail: health.detail },

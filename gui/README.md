@@ -3,17 +3,19 @@
 A premium Tauri-based desktop shell for `poke-engine`.
 
 ## What it includes
-- Multi-pane developer layout with repository explorer, code viewer, and streaming assistant
-- Live endpoint health for `/healthz` and `/v1/models`
-- Streaming client for `/v1/chat/completions`
-- Dark-mode visual system tuned for a high-end developer experience
+- Dedicated desktop layout with no terminal-style UI
+- Integrated repository explorer and file preview
+- Prism-powered syntax highlighting and unified diffs
+- Integrations and Skills management panels inspired by advanced coding tools
+- Live engine probes for `/healthz` and `/v1/models`
+- Streaming chat client for `/v1/chat/completions`
 
 ## Development
 1. Run the backend on port 3000.
-2. In `gui/`, install dependencies with Bun or npm.
-3. Start the frontend and Tauri shell.
+2. In `gui/`, install dependencies with Bun.
+3. Start the Vite frontend and Tauri shell.
 
 ## Notes
-- The explorer uses a polished local workspace scaffold so the UI feels complete immediately.
-- The base URL is configurable in the UI and stored in `localStorage`.
-- The assistant panel understands both SSE-style `data:` chunks and raw JSON tokens.
+- The base URL and model are persisted in localStorage.
+- Streaming supports SSE-style `data:` chunks and raw JSON payloads.
+- The explorer and management panels are local-first and ready to wire into real persistence later.
